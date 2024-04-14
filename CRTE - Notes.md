@@ -2096,95 +2096,16 @@ Enter-PSSession 192.168.102.1 -Authentication NegotiateWithImplicitCredential
 
 **Script Block logging:** registra bloques de código a medida que se ejecutan, por lo que captura la actividad completa y el contenido completo del script. Se obtiene un evento 4104 si algún comando es detectado por Script Block Logging
 
-https://medium.com/@ammadb/powershell-logging-module-logging-vs-script-block-logging-7aa74bf66261
+- https://medium.com/@ammadb/powershell-logging-module-logging-vs-script-block-logging-7aa74bf66261
 
-https://medium.com/@blue_e/logging-powershell-using-script-block-logging-7cdaad974fe6
+- https://medium.com/@blue_e/logging-powershell-using-script-block-logging-7cdaad974fe6
 
 
 **AntiMalware Scan Interface (AMSI):** AMSI es una interfaz que permite a las aplicaciones antivirus y soluciones de seguridad escanear y analizar scripts y contenido en tiempo real mientras se ejecutan en aplicaciones como PowerShell. AMSI puede detectar y bloquear scripts maliciosos.
 
 **Constrained Language Mode (CLM) :** CLM bloqueará la funcionalidad de powershell a un nivel donde no se pueda usar funciones de red, ejecutar powerview con múltiples errores, etc indicando que se está ejecutando en modo CLM. CLM no está habilitado de forma predeterminada.
 
-
 **Integrated with AppLocker and WDAC (Device Guard):**  AppLocker restringe que tipo de binarios están permitidos en la máquina para que puedan ejecutarse. La restricción se realiza en base al nombre del archivo, hash de archivo; mientras que WDAC proporciona control de la ejecución de código mediante políticas de aplicación.
 - AppLocker + WDAC = 
 
-## Domain Enumeration - Defense
 
-- Muchas de las enumeración son normales para el tráfico del DC.
-- Local Admin Hunting y DA Hunting genera eventos 4624 y 4634 en todas las máquinas testeadas, y 4672 en caso de ``success``.
-- Aparte de la detección, se puede realizar un endurecimiento en el DC (u otras máquinas) para contener la información proporcionada por la máquina consultada.
-- Netcease es un script que cambia los permisos en el método NetSessionEnum eliminando el permiso para el grupo Authenticated Users
-- Esto falla muchas de las capacidades de enumeración de sesiones del atacante y por tanto de caza de usuarios
-
-
-
-
-# Detection and Defense
-
-
-• Proteger y limitar los administradores de dominio
-• Aislar estaciones de trabajo administrativas
-• Administradores locales seguros
-• Administración suficiente y con plazos determinados
-• Aislar a los administradores en un bosque separado y violar la contención mediante niveles y ESAE
-
-
-## Protect and Limit Domain Admins
-
-- Reduzca la cantidad de administradores de dominio en su entorno. 
-- No permita ni limite el inicio de sesión de los DA en ninguna otra máquina que no sean los controladores de dominio. Si es necesario iniciar sesión en algunos servidores, no permita que otros administradores inicien sesión en esa máquina. 
-- (Intente) Nunca ejecutar un servicio con un DA. Las protecciones contra el robo de credenciales que analizaremos pronto se vuelven inútiles en el caso de una cuenta de servicio. 
-- Establezca "La cuenta es confidencial y no se puede delegar" para los DA.
-
-### Grupo de usuarios protegidos 
-
-Usuarios protegidos es un grupo introducido en Server 2012 R2 para "mejor protección contra el robo de credenciales" al no almacenar en caché las credenciales de manera insegura. Un usuario agregado a este grupo tiene las siguientes protecciones principales de dispositivo:
-- No se pueden usar CredSSP y WDigest: no más almacenamiento en caché de credenciales de texto sin cifrar.
-- El hash NTLM no se almacena en caché.
-- Kerberos no utiliza claves DES o RC4. Sin almacenamiento en caché de créditos de texto sin cifrar ni claves a largo plazo.
-Si el nivel funcional del dominio es Server 2012 R2, las siguientes protecciones de DC están disponibles:
-- Sin autenticación NTLM.
-- No hay claves DES o RC4 en la autenticación previa de Kerberos.
-- Sin delegación (restringida o no restringida)
-- No hay renovación de TGT más allá de la vida útil inicial de cuatro horas: "Vida útil máxima para el ticket de usuario" y "Vida útil máxima para la renovación del ticket de usuario" codificadas y no configurables.
-### Grupo de usuarios protegidos 
-
-• Necesita que todo el control de dominio sea al menos Server 2008 o posterior (debido a las claves AES).
-• MS no recomienda agregar DA y EA a este grupo sin probar "el impacto potencial" del bloqueo.
-• Sin inicio de sesión en caché, es decir, sin inicio de sesión sin conexión.
-• Tener cuentas de computadora y de servicios en este grupo es inútil ya que sus credenciales siempre estarán presentes en la máquina host.
-
-## Isolate administrative workstations
-
-### Privileged Administrative Workstations (PAWs)
-
-Una estación de trabajo reforzada para realizar tareas confidenciales como administración de controladores de dominio, infraestructura de nube, información confidencial funciones comerciales, etc. 
-Puede brindar protección contra ataques de phishing, vulnerabilidades del sistema operativo y ataques de reproducción de credenciales. 
-
-Se puede acceder a los servidores Admin Jump solo desde una PAW, múltiples estrategias 
-- Privilegios y hardware separados para tareas administrativas y normales.
-- Tener una VM en una PAW para tareas de usuario.
-
-### LAPS (Local Administrator Password Solution)
-
-• Almacenamiento centralizado de contraseñas en AD con aleatorización periódica donde se controla el acceso a los permisos de lectura.
-• Los objetos de computadora tienen dos atributos nuevos: el atributo ms-mcs-AdmPwd almacena la contraseña en texto claro y ms-mcs-AdmPwdExpirationTime controla el cambio de contraseña.
-• Almacenamiento en texto claro, la transmisión está cifrada.
-• Nota: Con una enumeración cuidadosa, es posible recuperar qué usuarios pueden acceder a la contraseña en texto claro, proporcionando una lista de objetivos atractivos.
-
-## Time Bound Administration - JIT
-
-La administración Justo a tiempo (JIT) brinda la capacidad de otorgar acceso administrativo con plazos determinados por solicitud. 
-¡Consulte la membresía de grupo temporal! (Requiere que esté habilitada la función de administración de acceso privilegiado, que no se puede desactivar más adelante)
-
-```
-Add-ADGroupMember -Identity 'Domain Admins' -Members newDA -MemberTimeToLive (New-TimeSpan -Minutes 60)
-```
-
-## Time Bound Administration - JEA
-
-• JEA (Just Enough Administration) proporciona control de acceso basado en roles para la administración remota delegada basada en PowerShell.
-• Con JEA, los usuarios no administradores pueden conectarse de forma remota a máquinas para realizar tareas administrativas específicas.
-• Por ejemplo, podemos controlar el comando que un usuario puede ejecutar e incluso restringir los parámetros que pueden usarse.
-• Los puntos finales de JEA tienen habilitada la transcripción y el registro de PowerShell.
