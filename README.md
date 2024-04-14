@@ -617,7 +617,10 @@ Enter-PSSession -Session $mailmgmt
 winrs -r:us-mgmt cmd
 winrs -remote:server1 -u:server1\administrator -p:Pass@1234 hostname
 ```
+
 ## Invoke Command
+
+- Nota: Recomiendo practicar el uso seguido de Invoke-Command siempre que en el laboratorio se use winrs para el movimiento lateral.
 
 ```
 ### Ejecutar comandos en multiples hosts o bloques de script
@@ -938,6 +941,8 @@ GMSAPasswordReader.exe --accountname jumpone
 
 # Domain Privilege Escalation
 ## Kerberos Delegation - Unconstrained Delegation
+
+Nota: Si quieres entender Kerberos te recomiendo seguir los videos de ATL4S en https://attl4s.github.io/. Considero que sus explicaciones sobre Kerberos Delegation valen oro. 
 
 - Cuando configuras con Unconstrained Delegation en un servicio, los clientes delegan/envian su TGT al servidor.
 - El servicio puede actuar en nombre de un usuario o equipo en la red usando el TGT.
@@ -1784,8 +1789,11 @@ Invoke-Command -ScriptBlock{whoami} -ComputerName euvendor-net.euvendor.local -A
 winrs -r:euvendor-net.euvendor.local cmd
 ```
 
-Para los ataques entre bosques, usar de preferencia el ``TRUST_TICKET_HASH`` en formato RC4 antes que AES. 
+Para los ataques entre bosques, usar de preferencia el ``TRUST_TICKET_HASH`` en formato RC4 antes que AES.
+
 ## MSSQL Server
+
+Nota: GOAD AD tiene buenos recursos, en particular los recursos de MSSQL pueden ser de gran ayuda https://mayfly277.github.io/posts/GOADv2-pwning-part7/.
 
 Los servidores MSSQL suelen desplegarse en abundancia en un dominio Windows. Los servidores SQL ofrecen muy buenas opciones para el movimiento lateral, ya que permiten asignar usuarios de dominio a roles de base de datos y, de este modo, formar parte de las confianzas de AD.
 
@@ -1885,6 +1893,7 @@ PS C:\Windows\system32> Invoke-SqlCmd -Query "EXECUTE('sp_configure ''xp_cmdshel
 ```
 
 Desde el servidor SQL inicial, los comandos del SO pueden ejecutarse utilizando consultas de enlace anidadas:
+
 ##### HeidiSQL
 
 ```
